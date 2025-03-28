@@ -28,10 +28,13 @@ public class ShapeSelectorPanel extends JPanel {
     private JButton btnCargarImagen;
     private JSlider sliderEscalaImagen;
 
-    // Nuevas funcionalidades
+    // Herramientas
     private JToggleButton btnSeleccionar;
     private JToggleButton btnMover;
     private JToggleButton btnRotar;
+    private JToggleButton btnEscalar;
+    private JToggleButton btnPincel;
+    private JToggleButton btnGoma;
     private JButton btnFusionar;
     private JCheckBox chkSeleccionMultiple;
     private JCheckBox chkDegradado;
@@ -45,6 +48,8 @@ public class ShapeSelectorPanel extends JPanel {
     private JButton btnEnviarAtras;
     private JButton btnAgrupar;
     private JButton btnDesagrupar;
+    private JSlider sliderTamanoPincel;
+    private JButton[] btnTexturas = new JButton[4];
 
     AtributosDibujo ad = new AtributosDibujo();
 
@@ -68,14 +73,13 @@ public class ShapeSelectorPanel extends JPanel {
         JPanel toolsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         toolsPanel.setBorder(BorderFactory.createTitledBorder("Herramientas"));
 
-        // Panel del menú con scroll (ahora más ancho)
+        // Panel del menú con scroll
         JPanel menuPanel = new JPanel();
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
 
-        // Configurar el scroll pane con mayor ancho
         scrollMenuPanel = new JScrollPane(menuPanel);
         scrollMenuPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollMenuPanel.setPreferredSize(new Dimension(300, 400)); // Más ancho que antes
+        scrollMenuPanel.setPreferredSize(new Dimension(300, 400));
 
         // Inicializar componentes de herramientas
         initToolComponents(toolsPanel);
@@ -91,6 +95,12 @@ public class ShapeSelectorPanel extends JPanel {
 
         // Inicializar componentes de contorno
         initStrokeComponents(menuPanel);
+
+        // Inicializar componentes de pincel/goma
+        initPincelGomaComponents(menuPanel);
+
+        // Inicializar componentes de texturas
+        initTextureComponents(menuPanel);
 
         // Inicializar botón de guardar
         initSaveButton(comboPanel);
@@ -113,95 +123,146 @@ public class ShapeSelectorPanel extends JPanel {
     private void initToolComponents(JPanel toolsPanel) {
         // Botón de selección
         btnSeleccionar = new JToggleButton(new ImageIcon("icons/select.png"));
-        btnSeleccionar.setToolTipText("Seleccionar figuras");
+        btnSeleccionar.setToolTipText("Seleccionar figuras (S)");
         btnSeleccionar.addActionListener(e -> {
             drawPanel.setModoSeleccion(btnSeleccionar.isSelected());
             if (btnSeleccionar.isSelected()) {
                 btnMover.setSelected(false);
                 btnRotar.setSelected(false);
+                btnEscalar.setSelected(false);
+                btnPincel.setSelected(false);
+                btnGoma.setSelected(false);
             }
         });
 
         // Checkbox para selección múltiple
-        chkSeleccionMultiple = new JCheckBox("Selección múltiple");
+        chkSeleccionMultiple = new JCheckBox("Selección múltiple (Shift)");
         chkSeleccionMultiple.addActionListener(e -> {
             drawPanel.setSeleccionMultiple(chkSeleccionMultiple.isSelected());
         });
 
         // Botón de mover
         btnMover = new JToggleButton(new ImageIcon("icons/move.png"));
-        btnMover.setToolTipText("Mover figuras seleccionadas");
+        btnMover.setToolTipText("Mover figuras seleccionadas (M)");
         btnMover.addActionListener(e -> {
             drawPanel.setModoMover(btnMover.isSelected());
             if (btnMover.isSelected()) {
                 btnSeleccionar.setSelected(false);
                 btnRotar.setSelected(false);
+                btnEscalar.setSelected(false);
+                btnPincel.setSelected(false);
+                btnGoma.setSelected(false);
             }
         });
 
         // Botón de rotar
         btnRotar = new JToggleButton(new ImageIcon("icons/rotate.png"));
-        btnRotar.setToolTipText("Rotar figuras seleccionadas");
+        btnRotar.setToolTipText("Rotar figuras seleccionadas (R)");
         btnRotar.addActionListener(e -> {
             drawPanel.setModoRotar(btnRotar.isSelected());
             if (btnRotar.isSelected()) {
                 btnSeleccionar.setSelected(false);
                 btnMover.setSelected(false);
+                btnEscalar.setSelected(false);
+                btnPincel.setSelected(false);
+                btnGoma.setSelected(false);
+            }
+        });
+
+        // Botón de escalar
+        btnEscalar = new JToggleButton(new ImageIcon("icons/scale.png"));
+        btnEscalar.setToolTipText("Escalar figuras seleccionadas (E)");
+        btnEscalar.addActionListener(e -> {
+            drawPanel.setModoEscalar(btnEscalar.isSelected());
+            if (btnEscalar.isSelected()) {
+                btnSeleccionar.setSelected(false);
+                btnMover.setSelected(false);
+                btnRotar.setSelected(false);
+                btnPincel.setSelected(false);
+                btnGoma.setSelected(false);
+            }
+        });
+
+        // Botón de pincel
+        btnPincel = new JToggleButton(new ImageIcon("icons/pencil.png"));
+        btnPincel.setToolTipText("Dibujo libre (P)");
+        btnPincel.addActionListener(e -> {
+            drawPanel.setModoPincel(btnPincel.isSelected());
+            if (btnPincel.isSelected()) {
+                btnSeleccionar.setSelected(false);
+                btnMover.setSelected(false);
+                btnRotar.setSelected(false);
+                btnEscalar.setSelected(false);
+                btnGoma.setSelected(false);
+            }
+        });
+
+        // Botón de goma
+        btnGoma = new JToggleButton(new ImageIcon("icons/eraser.png"));
+        btnGoma.setToolTipText("Borrar figuras (G)");
+        btnGoma.addActionListener(e -> {
+            drawPanel.setModoGoma(btnGoma.isSelected());
+            if (btnGoma.isSelected()) {
+                btnSeleccionar.setSelected(false);
+                btnMover.setSelected(false);
+                btnRotar.setSelected(false);
+                btnEscalar.setSelected(false);
+                btnPincel.setSelected(false);
             }
         });
 
         // Botón de fusionar
         btnFusionar = new JButton(new ImageIcon("icons/merge.png"));
-        btnFusionar.setToolTipText("Fusionar figuras seleccionadas");
+        btnFusionar.setToolTipText("Fusionar figuras seleccionadas (Ctrl+F)");
         btnFusionar.addActionListener(e -> {
             drawPanel.fusionarFigurasSeleccionadas();
         });
 
         // Botón de eliminar
         btnEliminar = new JButton(new ImageIcon("icons/delete.png"));
-        btnEliminar.setToolTipText("Eliminar figuras seleccionadas");
+        btnEliminar.setToolTipText("Eliminar figuras seleccionadas (Del)");
         btnEliminar.addActionListener(e -> {
             drawPanel.eliminarFigurasSeleccionadas();
         });
 
         // Botón de copiar
         btnCopiar = new JButton(new ImageIcon("icons/copy.png"));
-        btnCopiar.setToolTipText("Copiar figuras seleccionadas");
+        btnCopiar.setToolTipText("Copiar figuras seleccionadas (Ctrl+C)");
         btnCopiar.addActionListener(e -> {
             drawPanel.copiarFigurasSeleccionadas();
         });
 
         // Botón de pegar
         btnPegar = new JButton(new ImageIcon("icons/paste.png"));
-        btnPegar.setToolTipText("Pegar figuras copiadas");
+        btnPegar.setToolTipText("Pegar figuras copiadas (Ctrl+V)");
         btnPegar.addActionListener(e -> {
             drawPanel.pegarFigurasCopiadas();
         });
 
         // Botón de traer al frente
         btnTraerAlFrente = new JButton(new ImageIcon("icons/bring_to_front.png"));
-        btnTraerAlFrente.setToolTipText("Traer al frente las figuras seleccionadas");
+        btnTraerAlFrente.setToolTipText("Traer al frente (Ctrl+↑)");
         btnTraerAlFrente.addActionListener(e -> {
             drawPanel.traerAlFrente();
         });
 
         // Botón de enviar atrás
         btnEnviarAtras = new JButton(new ImageIcon("icons/send_to_back.png"));
-        btnEnviarAtras.setToolTipText("Enviar atrás las figuras seleccionadas");
+        btnEnviarAtras.setToolTipText("Enviar atrás (Ctrl+↓)");
         btnEnviarAtras.addActionListener(e -> {
             drawPanel.enviarAtras();
         });
 
         // Botón de agrupar
         btnAgrupar = new JButton(new ImageIcon("icons/group.png"));
-        btnAgrupar.setToolTipText("Agrupar figuras seleccionadas");
+        btnAgrupar.setToolTipText("Agrupar figuras (Ctrl+G)");
         btnAgrupar.addActionListener(e -> {
             drawPanel.agruparFiguras();
         });
 
         // Botón de desagrupar
         btnDesagrupar = new JButton(new ImageIcon("icons/ungroup.png"));
-        btnDesagrupar.setToolTipText("Desagrupar figuras seleccionadas");
+        btnDesagrupar.setToolTipText("Desagrupar figuras (Ctrl+U)");
         btnDesagrupar.addActionListener(e -> {
             drawPanel.desagruparFiguras();
         });
@@ -211,6 +272,9 @@ public class ShapeSelectorPanel extends JPanel {
         toolsPanel.add(chkSeleccionMultiple);
         toolsPanel.add(btnMover);
         toolsPanel.add(btnRotar);
+        toolsPanel.add(btnEscalar);
+        toolsPanel.add(btnPincel);
+        toolsPanel.add(btnGoma);
         toolsPanel.add(btnFusionar);
         toolsPanel.add(btnEliminar);
         toolsPanel.add(btnCopiar);
@@ -445,8 +509,51 @@ public class ShapeSelectorPanel extends JPanel {
         menuPanel.add(panelContorno);
     }
 
+    private void initPincelGomaComponents(JPanel menuPanel) {
+        JPanel panelPincel = new JPanel(new GridLayout(0, 1));
+        panelPincel.setBorder(BorderFactory.createTitledBorder("Pincel"));
+
+        sliderTamanoPincel = new JSlider(1, 50, 5);
+        sliderTamanoPincel.setMajorTickSpacing(10);
+        sliderTamanoPincel.setMinorTickSpacing(1);
+        sliderTamanoPincel.setPaintTicks(true);
+        sliderTamanoPincel.setPaintLabels(true);
+
+        JLabel lblTamanoPincel = new JLabel("Tamaño: 5px");
+
+        sliderTamanoPincel.addChangeListener(e -> {
+            int value = sliderTamanoPincel.getValue();
+            lblTamanoPincel.setText("Tamaño: " + value + "px");
+            drawPanel.setTamanoPincel(value);
+        });
+
+        panelPincel.add(new JLabel("Tamaño del pincel:"));
+        panelPincel.add(sliderTamanoPincel);
+        panelPincel.add(lblTamanoPincel);
+
+        menuPanel.add(panelPincel);
+    }
+
+    private void initTextureComponents(JPanel menuPanel) {
+        JPanel panelTexturas = new JPanel(new GridLayout(0, 2));
+        panelTexturas.setBorder(BorderFactory.createTitledBorder("Texturas"));
+
+        String[] nombresTexturas = {"Madera", "Líneas", "Puntos", "Cuadrícula"};
+
+        for (int i = 0; i < 4; i++) {
+            btnTexturas[i] = new JButton(nombresTexturas[i]);
+            final int index = i;
+            btnTexturas[i].addActionListener(e -> {
+                drawPanel.aplicarTextura(index);
+            });
+            panelTexturas.add(btnTexturas[i]);
+        }
+
+        menuPanel.add(panelTexturas);
+    }
+
     private void initSaveButton(JPanel comboPanel) {
-        btnGuardar = new JButton("Guardar Imagen");
+        btnGuardar = new JButton("Guardar Imagen (Ctrl+S)");
         btnGuardar.addActionListener(this::guardarImagen);
         comboPanel.add(btnGuardar);
     }

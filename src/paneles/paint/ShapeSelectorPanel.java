@@ -1,5 +1,6 @@
 package paneles.paint;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -120,9 +121,23 @@ public class ShapeSelectorPanel extends JPanel {
         scrollMenuPanel.setVisible(false);
     }
 
+
+
+    private ImageIcon resizeIcon(String path, int width, int height) {
+        try {
+            ImageIcon originalIcon = new ImageIcon(ImageIO.read(getClass().getResource(path)));
+            Image img = originalIcon.getImage();
+            Image resizedImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(resizedImg);
+        } catch (IOException e) {
+            System.err.println("Error al cargar el icono: " + path);
+            return new ImageIcon(); // Icono vacío si hay error
+        }
+    }
+
     private void initToolComponents(JPanel toolsPanel) {
         // Botón de selección
-        btnSeleccionar = new JToggleButton(new ImageIcon("icons/select.png"));
+        btnSeleccionar = new JToggleButton(resizeIcon("/icons/select.png", 14, 14));
         btnSeleccionar.setToolTipText("Seleccionar figuras (S)");
         btnSeleccionar.addActionListener(e -> {
             drawPanel.setModoSeleccion(btnSeleccionar.isSelected());
@@ -142,7 +157,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de mover
-        btnMover = new JToggleButton(new ImageIcon("icons/move.png"));
+        btnMover = new JToggleButton(resizeIcon("/icons/move.png", 14, 14));
         btnMover.setToolTipText("Mover figuras seleccionadas (M)");
         btnMover.addActionListener(e -> {
             drawPanel.setModoMover(btnMover.isSelected());
@@ -156,7 +171,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de rotar
-        btnRotar = new JToggleButton(new ImageIcon("icons/rotate.png"));
+        btnRotar = new JToggleButton(resizeIcon("/icons/rotate.png", 14, 14));
         btnRotar.setToolTipText("Rotar figuras seleccionadas (R)");
         btnRotar.addActionListener(e -> {
             drawPanel.setModoRotar(btnRotar.isSelected());
@@ -170,7 +185,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de escalar
-        btnEscalar = new JToggleButton(new ImageIcon("icons/scale.png"));
+        btnEscalar = new JToggleButton(resizeIcon("/icons/scale.png", 14, 14));
         btnEscalar.setToolTipText("Escalar figuras seleccionadas (E)");
         btnEscalar.addActionListener(e -> {
             drawPanel.setModoEscalar(btnEscalar.isSelected());
@@ -184,7 +199,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de pincel
-        btnPincel = new JToggleButton(new ImageIcon("icons/pencil.png"));
+        btnPincel = new JToggleButton(resizeIcon("/icons/pencil.png", 14, 14));
         btnPincel.setToolTipText("Dibujo libre (P)");
         btnPincel.addActionListener(e -> {
             drawPanel.setModoPincel(btnPincel.isSelected());
@@ -198,7 +213,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de goma
-        btnGoma = new JToggleButton(new ImageIcon("icons/eraser.png"));
+        btnGoma = new JToggleButton(resizeIcon("/icons/eraser.png", 14, 14));
         btnGoma.setToolTipText("Borrar figuras (G)");
         btnGoma.addActionListener(e -> {
             drawPanel.setModoGoma(btnGoma.isSelected());
@@ -212,56 +227,56 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de fusionar
-        btnFusionar = new JButton(new ImageIcon("icons/merge.png"));
+        btnFusionar = new JButton(resizeIcon("/icons/merge.png", 14, 14));
         btnFusionar.setToolTipText("Fusionar figuras seleccionadas (Ctrl+F)");
         btnFusionar.addActionListener(e -> {
             drawPanel.fusionarFigurasSeleccionadas();
         });
 
         // Botón de eliminar
-        btnEliminar = new JButton(new ImageIcon("icons/delete.png"));
+        btnEliminar = new JButton(resizeIcon("/icons/delete.png", 14, 14));
         btnEliminar.setToolTipText("Eliminar figuras seleccionadas (Del)");
         btnEliminar.addActionListener(e -> {
             drawPanel.eliminarFigurasSeleccionadas();
         });
 
         // Botón de copiar
-        btnCopiar = new JButton(new ImageIcon("icons/copy.png"));
+        btnCopiar = new JButton(resizeIcon("/icons/copy.png", 14, 14));
         btnCopiar.setToolTipText("Copiar figuras seleccionadas (Ctrl+C)");
         btnCopiar.addActionListener(e -> {
             drawPanel.copiarFigurasSeleccionadas();
         });
 
         // Botón de pegar
-        btnPegar = new JButton(new ImageIcon("icons/paste.png"));
+        btnPegar = new JButton(resizeIcon("/icons/paste.png", 14, 14));
         btnPegar.setToolTipText("Pegar figuras copiadas (Ctrl+V)");
         btnPegar.addActionListener(e -> {
             drawPanel.pegarFigurasCopiadas();
         });
 
         // Botón de traer al frente
-        btnTraerAlFrente = new JButton(new ImageIcon("icons/bring_to_front.png"));
+        btnTraerAlFrente = new JButton(resizeIcon("/icons/bring_to_front.png", 14, 14));
         btnTraerAlFrente.setToolTipText("Traer al frente (Ctrl+↑)");
         btnTraerAlFrente.addActionListener(e -> {
             drawPanel.traerAlFrente();
         });
 
         // Botón de enviar atrás
-        btnEnviarAtras = new JButton(new ImageIcon("icons/send_to_back.png"));
+        btnEnviarAtras = new JButton(resizeIcon("/icons/send_to_back.png", 14, 14));
         btnEnviarAtras.setToolTipText("Enviar atrás (Ctrl+↓)");
         btnEnviarAtras.addActionListener(e -> {
             drawPanel.enviarAtras();
         });
 
         // Botón de agrupar
-        btnAgrupar = new JButton(new ImageIcon("icons/group.png"));
+        btnAgrupar = new JButton(resizeIcon("/icons/group.png", 14, 14));
         btnAgrupar.setToolTipText("Agrupar figuras (Ctrl+G)");
         btnAgrupar.addActionListener(e -> {
             drawPanel.agruparFiguras();
         });
 
         // Botón de desagrupar
-        btnDesagrupar = new JButton(new ImageIcon("icons/ungroup.png"));
+        btnDesagrupar = new JButton(resizeIcon("/icons/ungroup.png", 14, 14));
         btnDesagrupar.setToolTipText("Desagrupar figuras (Ctrl+U)");
         btnDesagrupar.addActionListener(e -> {
             drawPanel.desagruparFiguras();

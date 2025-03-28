@@ -40,6 +40,22 @@ public class CustomDrawPanel extends JPanel {
     // Texturas predefinidas
     private BufferedImage[] texturas = new BufferedImage[4];
 
+    // Iconos para las herramientas
+    private ImageIcon iconSelect;
+    private ImageIcon iconMove;
+    private ImageIcon iconRotate;
+    private ImageIcon iconScale;
+    private ImageIcon iconPencil;
+    private ImageIcon iconEraser;
+    private ImageIcon iconMerge;
+    private ImageIcon iconDelete;
+    private ImageIcon iconCopy;
+    private ImageIcon iconPaste;
+    private ImageIcon iconBringToFront;
+    private ImageIcon iconSendToBack;
+    private ImageIcon iconGroup;
+    private ImageIcon iconUngroup;
+
     // Clase AtributosDibujo
     public class AtributosDibujo {
         private Color colorRelleno = Color.WHITE;
@@ -155,6 +171,274 @@ public class CustomDrawPanel extends JPanel {
         }
     }
 
+    public CustomDrawPanel() {
+        setPreferredSize(new Dimension(800, 600));
+        setBackground(Color.WHITE);
+
+        // Cargar iconos
+        cargarIconos();
+
+        // Configurar atajos de teclado
+        configurarAtajosTeclado();
+
+        // Crear texturas predefinidas
+        crearTexturas();
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                inicioArrastre = e.getPoint();
+                puntoReferencia = e.getPoint();
+
+                if (modoPincel) {
+                    puntosPincel.clear();
+                    puntosPincel.add(e.getPoint());
+                } else if (modoGoma) {
+                    eliminarFiguraEnPunto(e.getPoint());
+                } else if (modoSeleccion) {
+                    manejarSeleccion(e);
+                } else {
+                    figuraActual = crearFigura(e.getX(), e.getY(), 1, 1);
+                }
+                repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (figuraActual != null && !modoSeleccion && !modoMover && !modoRotar && !modoEscalar && !modoPincel && !modoGoma) {
+                    figuras.add(new ShapeAtributos(figuraActual, atributosActuales));
+                    figuraActual = null;
+                    repaint();
+                } else if (modoPincel && puntosPincel.size() > 1) {
+                    Path2D path = new Path2D.Double();
+                    path.moveTo(puntosPincel.get(0).x, puntosPincel.get(0).y);
+                    for (int i = 1; i < puntosPincel.size(); i++) {
+                        path.lineTo(puntosPincel.get(i).x, puntosPincel.get(i).y);
+                    }
+                    figuras.add(new ShapeAtributos(path, atributosActuales));
+                    puntosPincel.clear();
+                    repaint();
+                }
+                puntoReferencia = null;
+            }
+        });
+
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (modoMover && !figurasSeleccionadas.isEmpty()) {
+                    moverFiguras(e);
+                } else if (modoRotar && !figurasSeleccionadas.isEmpty()) {
+                    rotarFiguras(e);
+                } else if (modoEscalar && !figurasSeleccionadas.isEmpty()) {
+                    escalarFiguras(e);
+                } else if (modoPincel) {
+                    puntosPincel.add(e.getPoint());
+                    repaint();
+                } else if (modoGoma) {
+                    eliminarFiguraEnPunto(e.getPoint());
+                } else if (figuraActual != null) {
+                    int width = e.getX() - inicioArrastre.x;
+                    int height = e.getY() - inicioArrastre.y;
+                    figuraActual = crearFigura(inicioArrastre.x, inicioArrastre.y, width, height);
+                    repaint();
+                }
+            }
+        });
+    }
+
+    private void cargarIconos() {
+        try {
+            iconSelect = new ImageIcon(ImageIO.read(getClass().getResource("/icons/select.png")));
+            iconMove = new ImageIcon(ImageIO.read(getClass().getResource("/icons/move.png")));
+            iconRotate = new ImageIcon(ImageIO.read(getClass().getResource("/icons/rotate.png")));
+            iconScale = new ImageIcon(ImageIO.read(getClass().getResource("/icons/scale.png")));
+            iconPencil = new ImageIcon(ImageIO.read(getClass().getResource("/icons/pencil.png")));
+            iconEraser = new ImageIcon(ImageIO.read(getClass().getResource("/icons/eraser.png")));
+            iconMerge = new ImageIcon(ImageIO.read(getClass().getResource("/icons/merge.png")));
+            iconDelete = new ImageIcon(ImageIO.read(getClass().getResource("/icons/delete.png")));
+            iconCopy = new ImageIcon(ImageIO.read(getClass().getResource("/icons/copy.png")));
+            iconPaste = new ImageIcon(ImageIO.read(getClass().getResource("/icons/paste.png")));
+            iconBringToFront = new ImageIcon(ImageIO.read(getClass().getResource("/icons/bring_to_front.png")));
+            iconSendToBack = new ImageIcon(ImageIO.read(getClass().getResource("/icons/send_to_back.png")));
+            iconGroup = new ImageIcon(ImageIO.read(getClass().getResource("/icons/group.png")));
+            iconUngroup = new ImageIcon(ImageIO.read(getClass().getResource("/icons/ungroup.png")));
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar los iconos: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            // Usar iconos por defecto si hay error
+            iconSelect = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconMove = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconRotate = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconScale = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconPencil = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconEraser = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconMerge = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconDelete = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconCopy = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconPaste = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconBringToFront = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconSendToBack = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconGroup = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconUngroup = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+        }
+    }
+
+    private void configurarAtajosTeclado() {
+        InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = getActionMap();
+
+        // Atajos para figuras (CTRL+1 a CTRL+9)
+        for (int i = 1; i <= 9; i++) {
+            final int figura = i;
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_0 + i, InputEvent.CTRL_DOWN_MASK), "figura_" + i);
+            actionMap.put("figura_" + i, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setFigura(figura);
+                }
+            });
+        }
+
+        // Atajos para herramientas
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK), "seleccion");
+        actionMap.put("seleccion", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setModoSeleccion(true);
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK), "mover");
+        actionMap.put("mover", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setModoMover(true);
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK), "rotar");
+        actionMap.put("rotar", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setModoRotar(true);
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK), "escalar");
+        actionMap.put("escalar", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setModoEscalar(true);
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK), "pincel");
+        actionMap.put("pincel", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setModoPincel(true);
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK), "goma");
+        actionMap.put("goma", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setModoGoma(true);
+            }
+        });
+
+        // Atajos para operaciones
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK), "borrar");
+        actionMap.put("borrar", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                eliminarFigurasSeleccionadas();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK), "copiar");
+        actionMap.put("copiar", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                copiarFigurasSeleccionadas();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK), "pegar");
+        actionMap.put("pegar", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pegarFigurasCopiadas();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK), "deshacer");
+        actionMap.put("deshacer", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                borrarUltimaFigura();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK), "frente");
+        actionMap.put("frente", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                traerAlFrente();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK), "atras");
+        actionMap.put("atras", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                enviarAtras();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_J, InputEvent.CTRL_DOWN_MASK), "agrupar");
+        actionMap.put("agrupar", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                agruparFiguras();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK), "desagrupar");
+        actionMap.put("desagrupar", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                desagruparFiguras();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK), "fusionar");
+        actionMap.put("fusionar", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fusionarFigurasSeleccionadas();
+            }
+        });
+    }
+
+    // Métodos para obtener los iconos (pueden ser usados por la interfaz)
+    public ImageIcon getIconSelect() { return iconSelect; }
+    public ImageIcon getIconMove() { return iconMove; }
+    public ImageIcon getIconRotate() { return iconRotate; }
+    public ImageIcon getIconScale() { return iconScale; }
+    public ImageIcon getIconPencil() { return iconPencil; }
+    public ImageIcon getIconEraser() { return iconEraser; }
+    public ImageIcon getIconMerge() { return iconMerge; }
+    public ImageIcon getIconDelete() { return iconDelete; }
+    public ImageIcon getIconCopy() { return iconCopy; }
+    public ImageIcon getIconPaste() { return iconPaste; }
+    public ImageIcon getIconBringToFront() { return iconBringToFront; }
+    public ImageIcon getIconSendToBack() { return iconSendToBack; }
+    public ImageIcon getIconGroup() { return iconGroup; }
+    public ImageIcon getIconUngroup() { return iconUngroup; }
+
     // Métodos de operación
     public void setModoSeleccion(boolean activo) {
         this.modoSeleccion = activo;
@@ -192,7 +476,6 @@ public class CustomDrawPanel extends JPanel {
         repaint();
     }
 
-    // Método para establecer el modo de escalado
     public void setModoEscalar(boolean activo) {
         this.modoEscalar = activo;
         if (activo) {
@@ -205,7 +488,6 @@ public class CustomDrawPanel extends JPanel {
         repaint();
     }
 
-    // Método para establecer el modo pincel
     public void setModoPincel(boolean activo) {
         this.modoPincel = activo;
         if (activo) {
@@ -219,7 +501,6 @@ public class CustomDrawPanel extends JPanel {
         repaint();
     }
 
-    // Método para establecer el modo goma
     public void setModoGoma(boolean activo) {
         this.modoGoma = activo;
         if (activo) {
@@ -232,12 +513,10 @@ public class CustomDrawPanel extends JPanel {
         repaint();
     }
 
-    // Método para establecer el tamaño del pincel
     public void setTamanoPincel(float tamano) {
         this.tamanoPincel = tamano;
     }
 
-    // Método para aplicar textura a las figuras seleccionadas
     public void aplicarTextura(int index) {
         if (figurasSeleccionadas.isEmpty()) return;
 
@@ -559,76 +838,6 @@ public class CustomDrawPanel extends JPanel {
         }
     }
 
-    public CustomDrawPanel() {
-        setPreferredSize(new Dimension(800, 600));
-        setBackground(Color.WHITE);
-
-        // Crear texturas predefinidas
-        crearTexturas();
-
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                inicioArrastre = e.getPoint();
-                puntoReferencia = e.getPoint();
-
-                if (modoPincel) {
-                    puntosPincel.clear();
-                    puntosPincel.add(e.getPoint());
-                } else if (modoGoma) {
-                    eliminarFiguraEnPunto(e.getPoint());
-                } else if (modoSeleccion) {
-                    manejarSeleccion(e);
-                } else {
-                    figuraActual = crearFigura(e.getX(), e.getY(), 1, 1);
-                }
-                repaint();
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (figuraActual != null && !modoSeleccion && !modoMover && !modoRotar && !modoEscalar && !modoPincel && !modoGoma) {
-                    figuras.add(new ShapeAtributos(figuraActual, atributosActuales));
-                    figuraActual = null;
-                    repaint();
-                } else if (modoPincel && puntosPincel.size() > 1) {
-                    Path2D path = new Path2D.Double();
-                    path.moveTo(puntosPincel.get(0).x, puntosPincel.get(0).y);
-                    for (int i = 1; i < puntosPincel.size(); i++) {
-                        path.lineTo(puntosPincel.get(i).x, puntosPincel.get(i).y);
-                    }
-                    figuras.add(new ShapeAtributos(path, atributosActuales));
-                    puntosPincel.clear();
-                    repaint();
-                }
-                puntoReferencia = null;
-            }
-        });
-
-        addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                if (modoMover && !figurasSeleccionadas.isEmpty()) {
-                    moverFiguras(e);
-                } else if (modoRotar && !figurasSeleccionadas.isEmpty()) {
-                    rotarFiguras(e);
-                } else if (modoEscalar && !figurasSeleccionadas.isEmpty()) {
-                    escalarFiguras(e);
-                } else if (modoPincel) {
-                    puntosPincel.add(e.getPoint());
-                    repaint();
-                } else if (modoGoma) {
-                    eliminarFiguraEnPunto(e.getPoint());
-                } else if (figuraActual != null) {
-                    int width = e.getX() - inicioArrastre.x;
-                    int height = e.getY() - inicioArrastre.y;
-                    figuraActual = crearFigura(inicioArrastre.x, inicioArrastre.y, width, height);
-                    repaint();
-                }
-            }
-        });
-    }
-
     private void crearTexturas() {
         // Textura 1: Madera
         texturas[0] = new BufferedImage(50, 50, BufferedImage.TYPE_INT_RGB);
@@ -948,7 +1157,6 @@ public class CustomDrawPanel extends JPanel {
         }
     }
 
-    // Métodos para crear figuras específicas
     private Shape crearCorazon(int x, int y, int width, int height) {
         Path2D corazon = new Path2D.Double();
         corazon.moveTo(x + width / 2, y + height / 4);

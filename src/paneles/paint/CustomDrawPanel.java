@@ -22,7 +22,11 @@ public class CustomDrawPanel extends JPanel {
     private List<Point> puntosPincel = new ArrayList<>();
     private boolean modoPincel = false;
     private boolean modoGoma = false;
+    private boolean modoCubeta = false;
     private float tamanoPincel = 5.0f;
+    private float tamanoGoma = 10.0f;
+    private Color colorCubeta = Color.WHITE;
+    private boolean rellenoCubeta = true;
 
     // Modos de operación
     private boolean modoSeleccion = false;
@@ -47,6 +51,7 @@ public class CustomDrawPanel extends JPanel {
     private ImageIcon iconScale;
     private ImageIcon iconPencil;
     private ImageIcon iconEraser;
+    private ImageIcon iconBucket;
     private ImageIcon iconMerge;
     private ImageIcon iconDelete;
     private ImageIcon iconCopy;
@@ -195,6 +200,8 @@ public class CustomDrawPanel extends JPanel {
                     puntosPincel.add(e.getPoint());
                 } else if (modoGoma) {
                     eliminarFiguraEnPunto(e.getPoint());
+                } else if (modoCubeta) {
+                    aplicarCubeta(e.getPoint());
                 } else if (modoSeleccion) {
                     manejarSeleccion(e);
                 } else {
@@ -205,7 +212,7 @@ public class CustomDrawPanel extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (figuraActual != null && !modoSeleccion && !modoMover && !modoRotar && !modoEscalar && !modoPincel && !modoGoma) {
+                if (figuraActual != null && !modoSeleccion && !modoMover && !modoRotar && !modoEscalar && !modoPincel && !modoGoma && !modoCubeta) {
                     figuras.add(new ShapeAtributos(figuraActual, atributosActuales));
                     figuraActual = null;
                     repaint();
@@ -255,6 +262,7 @@ public class CustomDrawPanel extends JPanel {
             iconScale = new ImageIcon(ImageIO.read(getClass().getResource("/icons/scale.png")));
             iconPencil = new ImageIcon(ImageIO.read(getClass().getResource("/icons/pencil.png")));
             iconEraser = new ImageIcon(ImageIO.read(getClass().getResource("/icons/eraser.png")));
+            iconBucket = new ImageIcon(ImageIO.read(getClass().getResource("/icons/bucket.png")));
             iconMerge = new ImageIcon(ImageIO.read(getClass().getResource("/icons/merge.png")));
             iconDelete = new ImageIcon(ImageIO.read(getClass().getResource("/icons/delete.png")));
             iconCopy = new ImageIcon(ImageIO.read(getClass().getResource("/icons/copy.png")));
@@ -273,6 +281,7 @@ public class CustomDrawPanel extends JPanel {
             iconScale = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
             iconPencil = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
             iconEraser = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
+            iconBucket = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
             iconMerge = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
             iconDelete = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
             iconCopy = (ImageIcon)UIManager.getIcon("FileView.directoryIcon");
@@ -346,6 +355,14 @@ public class CustomDrawPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setModoGoma(true);
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK), "cubeta");
+        actionMap.put("cubeta", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setModoCubeta(true);
             }
         });
 
@@ -430,6 +447,7 @@ public class CustomDrawPanel extends JPanel {
     public ImageIcon getIconScale() { return iconScale; }
     public ImageIcon getIconPencil() { return iconPencil; }
     public ImageIcon getIconEraser() { return iconEraser; }
+    public ImageIcon getIconBucket() { return iconBucket; }
     public ImageIcon getIconMerge() { return iconMerge; }
     public ImageIcon getIconDelete() { return iconDelete; }
     public ImageIcon getIconCopy() { return iconCopy; }
@@ -448,6 +466,7 @@ public class CustomDrawPanel extends JPanel {
             this.modoEscalar = false;
             this.modoPincel = false;
             this.modoGoma = false;
+            this.modoCubeta = false;
         }
         repaint();
     }
@@ -460,6 +479,7 @@ public class CustomDrawPanel extends JPanel {
             this.modoEscalar = false;
             this.modoPincel = false;
             this.modoGoma = false;
+            this.modoCubeta = false;
         }
         repaint();
     }
@@ -472,6 +492,7 @@ public class CustomDrawPanel extends JPanel {
             this.modoEscalar = false;
             this.modoPincel = false;
             this.modoGoma = false;
+            this.modoCubeta = false;
         }
         repaint();
     }
@@ -484,6 +505,7 @@ public class CustomDrawPanel extends JPanel {
             this.modoRotar = false;
             this.modoPincel = false;
             this.modoGoma = false;
+            this.modoCubeta = false;
         }
         repaint();
     }
@@ -496,6 +518,7 @@ public class CustomDrawPanel extends JPanel {
             this.modoRotar = false;
             this.modoEscalar = false;
             this.modoGoma = false;
+            this.modoCubeta = false;
             puntosPincel.clear();
         }
         repaint();
@@ -509,12 +532,38 @@ public class CustomDrawPanel extends JPanel {
             this.modoRotar = false;
             this.modoEscalar = false;
             this.modoPincel = false;
+            this.modoCubeta = false;
+        }
+        repaint();
+    }
+
+    public void setModoCubeta(boolean activo) {
+        this.modoCubeta = activo;
+        if (activo) {
+            this.modoSeleccion = false;
+            this.modoMover = false;
+            this.modoRotar = false;
+            this.modoEscalar = false;
+            this.modoPincel = false;
+            this.modoGoma = false;
         }
         repaint();
     }
 
     public void setTamanoPincel(float tamano) {
         this.tamanoPincel = tamano;
+    }
+
+    public void setTamanoGoma(float tamano) {
+        this.tamanoGoma = tamano;
+    }
+
+    public void setColorCubeta(Color color) {
+        this.colorCubeta = color;
+    }
+
+    public void setRellenoCubeta(boolean rellenar) {
+        this.rellenoCubeta = rellenar;
     }
 
     public void aplicarTextura(int index) {
@@ -992,6 +1041,23 @@ public class CustomDrawPanel extends JPanel {
             if (sa.forma.contains(p)) {
                 figuras.remove(i);
                 figurasSeleccionadas.remove(sa);
+                repaint();
+                break;
+            }
+        }
+    }
+
+    private void aplicarCubeta(Point p) {
+        for (int i = figuras.size() - 1; i >= 0; i--) {
+            ShapeAtributos sa = figuras.get(i);
+            if (sa.forma.contains(p)) {
+                if (rellenoCubeta) {
+                    sa.atributos.setColorRelleno(colorCubeta);
+                    sa.textura = null;
+                    sa.atributos.setRellenoImagenActivo(false);
+                    sa.atributos.setTexturaIndex(-1);
+                }
+                sa.atributos.setColorContorno(colorCubeta);
                 repaint();
                 break;
             }

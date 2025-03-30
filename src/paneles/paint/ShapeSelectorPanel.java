@@ -36,6 +36,7 @@ public class ShapeSelectorPanel extends JPanel {
     private JToggleButton btnEscalar;
     private JToggleButton btnPincel;
     private JToggleButton btnGoma;
+    private JToggleButton btnCubeta;
     private JButton btnFusionar;
     private JCheckBox chkSeleccionMultiple;
     private JCheckBox chkDegradado;
@@ -97,8 +98,8 @@ public class ShapeSelectorPanel extends JPanel {
         // Inicializar componentes de contorno
         initStrokeComponents(menuPanel);
 
-        // Inicializar componentes de pincel/goma
-        initPincelGomaComponents(menuPanel);
+        // Inicializar componentes de pincel/goma/cubeta
+        initPincelGomaCubetaComponents(menuPanel);
 
         // Inicializar componentes de texturas
         initTextureComponents(menuPanel);
@@ -120,8 +121,6 @@ public class ShapeSelectorPanel extends JPanel {
         // Inicialmente ocultar el menú
         scrollMenuPanel.setVisible(false);
     }
-
-
 
     private ImageIcon resizeIcon(String path, int width, int height) {
         try {
@@ -147,6 +146,7 @@ public class ShapeSelectorPanel extends JPanel {
                 btnEscalar.setSelected(false);
                 btnPincel.setSelected(false);
                 btnGoma.setSelected(false);
+                btnCubeta.setSelected(false);
             }
         });
 
@@ -167,6 +167,7 @@ public class ShapeSelectorPanel extends JPanel {
                 btnEscalar.setSelected(false);
                 btnPincel.setSelected(false);
                 btnGoma.setSelected(false);
+                btnCubeta.setSelected(false);
             }
         });
 
@@ -181,6 +182,7 @@ public class ShapeSelectorPanel extends JPanel {
                 btnEscalar.setSelected(false);
                 btnPincel.setSelected(false);
                 btnGoma.setSelected(false);
+                btnCubeta.setSelected(false);
             }
         });
 
@@ -195,6 +197,7 @@ public class ShapeSelectorPanel extends JPanel {
                 btnRotar.setSelected(false);
                 btnPincel.setSelected(false);
                 btnGoma.setSelected(false);
+                btnCubeta.setSelected(false);
             }
         });
 
@@ -209,6 +212,7 @@ public class ShapeSelectorPanel extends JPanel {
                 btnRotar.setSelected(false);
                 btnEscalar.setSelected(false);
                 btnGoma.setSelected(false);
+                btnCubeta.setSelected(false);
             }
         });
 
@@ -223,6 +227,22 @@ public class ShapeSelectorPanel extends JPanel {
                 btnRotar.setSelected(false);
                 btnEscalar.setSelected(false);
                 btnPincel.setSelected(false);
+                btnCubeta.setSelected(false);
+            }
+        });
+
+        // Botón de cubeta
+        btnCubeta = new JToggleButton(resizeIcon("/icons/bucket.png", 14, 14));
+        btnCubeta.setToolTipText("Rellenar áreas (B)");
+        btnCubeta.addActionListener(e -> {
+            drawPanel.setModoCubeta(btnCubeta.isSelected());
+            if (btnCubeta.isSelected()) {
+                btnSeleccionar.setSelected(false);
+                btnMover.setSelected(false);
+                btnRotar.setSelected(false);
+                btnEscalar.setSelected(false);
+                btnPincel.setSelected(false);
+                btnGoma.setSelected(false);
             }
         });
 
@@ -290,6 +310,7 @@ public class ShapeSelectorPanel extends JPanel {
         toolsPanel.add(btnEscalar);
         toolsPanel.add(btnPincel);
         toolsPanel.add(btnGoma);
+        toolsPanel.add(btnCubeta);
         toolsPanel.add(btnFusionar);
         toolsPanel.add(btnEliminar);
         toolsPanel.add(btnCopiar);
@@ -524,7 +545,11 @@ public class ShapeSelectorPanel extends JPanel {
         menuPanel.add(panelContorno);
     }
 
-    private void initPincelGomaComponents(JPanel menuPanel) {
+    private void initPincelGomaCubetaComponents(JPanel menuPanel) {
+        JPanel panelHerramientas = new JPanel(new GridLayout(0, 1));
+        panelHerramientas.setBorder(BorderFactory.createTitledBorder("Herramientas de dibujo"));
+
+        // Configuración del pincel
         JPanel panelPincel = new JPanel(new GridLayout(0, 1));
         panelPincel.setBorder(BorderFactory.createTitledBorder("Pincel"));
 
@@ -546,7 +571,54 @@ public class ShapeSelectorPanel extends JPanel {
         panelPincel.add(sliderTamanoPincel);
         panelPincel.add(lblTamanoPincel);
 
-        menuPanel.add(panelPincel);
+        // Configuración de la goma
+        JPanel panelGoma = new JPanel(new GridLayout(0, 1));
+        panelGoma.setBorder(BorderFactory.createTitledBorder("Goma"));
+
+        JSlider sliderTamanoGoma = new JSlider(1, 50, 10);
+        sliderTamanoGoma.setMajorTickSpacing(10);
+        sliderTamanoGoma.setMinorTickSpacing(1);
+        sliderTamanoGoma.setPaintTicks(true);
+        sliderTamanoGoma.setPaintLabels(true);
+
+        JLabel lblTamanoGoma = new JLabel("Tamaño: 10px");
+
+        sliderTamanoGoma.addChangeListener(e -> {
+            int value = sliderTamanoGoma.getValue();
+            lblTamanoGoma.setText("Tamaño: " + value + "px");
+            drawPanel.setTamanoGoma(value);
+        });
+
+        panelGoma.add(new JLabel("Tamaño de la goma:"));
+        panelGoma.add(sliderTamanoGoma);
+        panelGoma.add(lblTamanoGoma);
+
+        // Configuración de la cubeta
+        JPanel panelCubeta = new JPanel(new GridLayout(0, 1));
+        panelCubeta.setBorder(BorderFactory.createTitledBorder("Cubeta"));
+
+        JButton btnColorCubeta = new JButton("Color de relleno");
+        btnColorCubeta.addActionListener(e -> {
+            Color color = JColorChooser.showDialog(this, "Color de relleno", Color.WHITE);
+            if (color != null) {
+                drawPanel.setColorCubeta(color);
+            }
+        });
+
+        JCheckBox chkRellenoCubeta = new JCheckBox("Rellenar contornos cerrados", true);
+        chkRellenoCubeta.addActionListener(e -> {
+            drawPanel.setRellenoCubeta(chkRellenoCubeta.isSelected());
+        });
+
+        panelCubeta.add(btnColorCubeta);
+        panelCubeta.add(chkRellenoCubeta);
+
+        // Agregar paneles al panel principal
+        panelHerramientas.add(panelPincel);
+        panelHerramientas.add(panelGoma);
+        panelHerramientas.add(panelCubeta);
+
+        menuPanel.add(panelHerramientas);
     }
 
     private void initTextureComponents(JPanel menuPanel) {

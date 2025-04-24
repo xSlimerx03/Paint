@@ -27,6 +27,7 @@ public class CustomDrawPanel extends JPanel {
     private float tamanoGoma = 10.0f;
     private Color colorCubeta = Color.WHITE;
     private boolean rellenoCubeta = true;
+    private float transparenciaActual = 1.0f;
 
     // Modos de operación
     private boolean modoSeleccion = false;
@@ -61,124 +62,10 @@ public class CustomDrawPanel extends JPanel {
     private ImageIcon iconGroup;
     private ImageIcon iconUngroup;
 
-    // Clase AtributosDibujo
-    public class AtributosDibujo {
-        private Color colorRelleno = Color.WHITE;
-        private Color colorContorno = Color.BLACK;
-        private boolean rellenoActivo = true;
-        private boolean contornoActivo = true;
-        private float anchoContorno = 1.0f;
-        private float[] patronPunteado = null;
-        private boolean strokePunteado = false;
-        private BufferedImage imagenRelleno = null;
-        private boolean rellenoImagenActivo = false;
-        private boolean rellenoDegradado = false;
-        private Color colorDegradadoInicio = Color.WHITE;
-        private Color colorDegradadoFin = Color.BLUE;
-        private int direccionDegradado = 0;
-        private boolean esGrupo = false;
-        private int texturaIndex = -1;
-
-        public boolean isEsGrupo() {
-            return esGrupo;
-        }
-
-        public void setEsGrupo(boolean esGrupo) {
-            this.esGrupo = esGrupo;
-        }
-
-        public AtributosDibujo copiar() {
-            AtributosDibujo copia = new AtributosDibujo();
-            copia.colorRelleno = this.colorRelleno;
-            copia.colorContorno = this.colorContorno;
-            copia.rellenoActivo = this.rellenoActivo;
-            copia.contornoActivo = this.contornoActivo;
-            copia.anchoContorno = this.anchoContorno;
-            copia.patronPunteado = this.patronPunteado != null ? this.patronPunteado.clone() : null;
-            copia.strokePunteado = this.strokePunteado;
-            copia.imagenRelleno = this.imagenRelleno;
-            copia.rellenoImagenActivo = this.rellenoImagenActivo;
-            copia.rellenoDegradado = this.rellenoDegradado;
-            copia.colorDegradadoInicio = this.colorDegradadoInicio;
-            copia.colorDegradadoFin = this.colorDegradadoFin;
-            copia.direccionDegradado = this.direccionDegradado;
-            copia.esGrupo = this.esGrupo;
-            copia.texturaIndex = this.texturaIndex;
-            return copia;
-        }
-
-        public Stroke crearStroke() {
-            if (strokePunteado && patronPunteado != null) {
-                return new BasicStroke(anchoContorno, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, patronPunteado, 0.0f);
-            } else {
-                return new BasicStroke(anchoContorno);
-            }
-        }
-
-        public Color getColorRelleno() { return colorRelleno; }
-        public void setColorRelleno(Color colorRelleno) { this.colorRelleno = colorRelleno; }
-        public Color getColorContorno() { return colorContorno; }
-        public void setColorContorno(Color colorContorno) { this.colorContorno = colorContorno; }
-        public boolean isRellenoActivo() { return rellenoActivo; }
-        public void setRellenoActivo(boolean rellenoActivo) { this.rellenoActivo = rellenoActivo; }
-        public boolean isContornoActivo() { return contornoActivo; }
-        public void setContornoActivo(boolean contornoActivo) { this.contornoActivo = contornoActivo; }
-        public float getAnchoContorno() { return anchoContorno; }
-        public void setAnchoContorno(float anchoContorno) { this.anchoContorno = anchoContorno; }
-        public float[] getPatronPunteado() { return patronPunteado; }
-        public void setPatronPunteado(float[] patronPunteado) { this.patronPunteado = patronPunteado; }
-        public boolean isStrokePunteado() { return strokePunteado; }
-        public void setStrokePunteado(boolean strokePunteado) { this.strokePunteado = strokePunteado; }
-        public BufferedImage getImagenRelleno() { return imagenRelleno; }
-        public void setImagenRelleno(BufferedImage imagenRelleno) { this.imagenRelleno = imagenRelleno; }
-        public boolean isRellenoImagenActivo() { return rellenoImagenActivo; }
-        public void setRellenoImagenActivo(boolean rellenoImagenActivo) { this.rellenoImagenActivo = rellenoImagenActivo; }
-        public boolean isRellenoDegradado() { return rellenoDegradado; }
-        public void setRellenoDegradado(boolean rellenoDegradado) { this.rellenoDegradado = rellenoDegradado; }
-        public Color getColorDegradadoInicio() { return colorDegradadoInicio; }
-        public void setColorDegradadoInicio(Color colorDegradadoInicio) { this.colorDegradadoInicio = colorDegradadoInicio; }
-        public Color getColorDegradadoFin() { return colorDegradadoFin; }
-        public void setColorDegradadoFin(Color colorDegradadoFin) { this.colorDegradadoFin = colorDegradadoFin; }
-        public int getDireccionDegradado() { return direccionDegradado; }
-        public void setDireccionDegradado(int direccionDegradado) { this.direccionDegradado = direccionDegradado; }
-        public int getTexturaIndex() { return texturaIndex; }
-        public void setTexturaIndex(int texturaIndex) { this.texturaIndex = texturaIndex; }
-    }
-
-    private class ShapeAtributos {
-        Shape forma;
-        AtributosDibujo atributos;
-        Stroke stroke;
-        TexturePaint textura;
-
-        public ShapeAtributos(Shape forma, AtributosDibujo atributos) {
-            this.forma = forma;
-            this.atributos = atributos.copiar();
-            this.stroke = atributos.crearStroke();
-
-            if (atributos.getTexturaIndex() >= 0 && atributos.getTexturaIndex() < texturas.length && texturas[atributos.getTexturaIndex()] != null) {
-                this.textura = new TexturePaint(
-                        texturas[atributos.getTexturaIndex()],
-                        new Rectangle2D.Double(0, 0,
-                                texturas[atributos.getTexturaIndex()].getWidth(),
-                                texturas[atributos.getTexturaIndex()].getHeight())
-                );
-            } else if (atributos.isRellenoImagenActivo() && atributos.getImagenRelleno() != null) {
-                this.textura = new TexturePaint(
-                        atributos.getImagenRelleno(),
-                        new Rectangle2D.Double(0, 0,
-                                atributos.getImagenRelleno().getWidth(),
-                                atributos.getImagenRelleno().getHeight())
-                );
-            } else {
-                this.textura = null;
-            }
-        }
-    }
-
     public CustomDrawPanel() {
         setPreferredSize(new Dimension(800, 600));
         setBackground(Color.WHITE);
+        setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
 
         // Cargar iconos
         cargarIconos();
@@ -254,6 +141,130 @@ public class CustomDrawPanel extends JPanel {
         });
     }
 
+    public class AtributosDibujo {
+        private Color colorRelleno = Color.WHITE;
+        private Color colorContorno = Color.BLACK;
+        private boolean rellenoActivo = true;
+        private boolean contornoActivo = true;
+        private float anchoContorno = 1.0f;
+        private float[] patronPunteado = null;
+        private boolean strokePunteado = false;
+        private BufferedImage imagenRelleno = null;
+        private boolean rellenoImagenActivo = false;
+        private boolean rellenoDegradado = false;
+        private Color colorDegradadoInicio = Color.WHITE;
+        private Color colorDegradadoFin = Color.BLUE;
+        private int direccionDegradado = 0;
+        private boolean esGrupo = false;
+        private int texturaIndex = -1;
+        private float transparencia = 1.0f;
+
+        public boolean isEsGrupo() {
+            return esGrupo;
+        }
+
+        public void setEsGrupo(boolean esGrupo) {
+            this.esGrupo = esGrupo;
+        }
+
+        public float getTransparencia() {
+            return transparencia;
+        }
+
+        public void setTransparencia(float transparencia) {
+            this.transparencia = transparencia;
+        }
+
+        public AtributosDibujo copiar() {
+            AtributosDibujo copia = new AtributosDibujo();
+            copia.colorRelleno = this.colorRelleno;
+            copia.colorContorno = this.colorContorno;
+            copia.rellenoActivo = this.rellenoActivo;
+            copia.contornoActivo = this.contornoActivo;
+            copia.anchoContorno = this.anchoContorno;
+            copia.patronPunteado = this.patronPunteado != null ? this.patronPunteado.clone() : null;
+            copia.strokePunteado = this.strokePunteado;
+            copia.imagenRelleno = this.imagenRelleno;
+            copia.rellenoImagenActivo = this.rellenoImagenActivo;
+            copia.rellenoDegradado = this.rellenoDegradado;
+            copia.colorDegradadoInicio = this.colorDegradadoInicio;
+            copia.colorDegradadoFin = this.colorDegradadoFin;
+            copia.direccionDegradado = this.direccionDegradado;
+            copia.esGrupo = this.esGrupo;
+            copia.texturaIndex = this.texturaIndex;
+            copia.transparencia = this.transparencia;
+            return copia;
+        }
+
+        public Stroke crearStroke() {
+            if (strokePunteado && patronPunteado != null) {
+                return new BasicStroke(anchoContorno, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, patronPunteado, 0.0f);
+            } else {
+                return new BasicStroke(anchoContorno);
+            }
+        }
+
+        public Color getColorRelleno() { return colorRelleno; }
+        public void setColorRelleno(Color colorRelleno) { this.colorRelleno = colorRelleno; }
+        public Color getColorContorno() { return colorContorno; }
+        public void setColorContorno(Color colorContorno) { this.colorContorno = colorContorno; }
+        public boolean isRellenoActivo() { return rellenoActivo; }
+        public void setRellenoActivo(boolean rellenoActivo) { this.rellenoActivo = rellenoActivo; }
+        public boolean isContornoActivo() { return contornoActivo; }
+        public void setContornoActivo(boolean contornoActivo) { this.contornoActivo = contornoActivo; }
+        public float getAnchoContorno() { return anchoContorno; }
+        public void setAnchoContorno(float anchoContorno) { this.anchoContorno = anchoContorno; }
+        public float[] getPatronPunteado() { return patronPunteado; }
+        public void setPatronPunteado(float[] patronPunteado) { this.patronPunteado = patronPunteado; }
+        public boolean isStrokePunteado() { return strokePunteado; }
+        public void setStrokePunteado(boolean strokePunteado) { this.strokePunteado = strokePunteado; }
+        public BufferedImage getImagenRelleno() { return imagenRelleno; }
+        public void setImagenRelleno(BufferedImage imagenRelleno) { this.imagenRelleno = imagenRelleno; }
+        public boolean isRellenoImagenActivo() { return rellenoImagenActivo; }
+        public void setRellenoImagenActivo(boolean rellenoImagenActivo) { this.rellenoImagenActivo = rellenoImagenActivo; }
+        public boolean isRellenoDegradado() { return rellenoDegradado; }
+        public void setRellenoDegradado(boolean rellenoDegradado) { this.rellenoDegradado = rellenoDegradado; }
+        public Color getColorDegradadoInicio() { return colorDegradadoInicio; }
+        public void setColorDegradadoInicio(Color colorDegradadoInicio) { this.colorDegradadoInicio = colorDegradadoInicio; }
+        public Color getColorDegradadoFin() { return colorDegradadoFin; }
+        public void setColorDegradadoFin(Color colorDegradadoFin) { this.colorDegradadoFin = colorDegradadoFin; }
+        public int getDireccionDegradado() { return direccionDegradado; }
+        public void setDireccionDegradado(int direccionDegradado) { this.direccionDegradado = direccionDegradado; }
+        public int getTexturaIndex() { return texturaIndex; }
+        public void setTexturaIndex(int texturaIndex) { this.texturaIndex = texturaIndex; }
+    }
+
+    private class ShapeAtributos {
+        Shape forma;
+        AtributosDibujo atributos;
+        Stroke stroke;
+        TexturePaint textura;
+
+        public ShapeAtributos(Shape forma, AtributosDibujo atributos) {
+            this.forma = forma;
+            this.atributos = atributos.copiar();
+            this.stroke = atributos.crearStroke();
+
+            if (atributos.getTexturaIndex() >= 0 && atributos.getTexturaIndex() < texturas.length && texturas[atributos.getTexturaIndex()] != null) {
+                this.textura = new TexturePaint(
+                        texturas[atributos.getTexturaIndex()],
+                        new Rectangle2D.Double(0, 0,
+                                texturas[atributos.getTexturaIndex()].getWidth(),
+                                texturas[atributos.getTexturaIndex()].getHeight())
+                );
+            } else if (atributos.isRellenoImagenActivo() && atributos.getImagenRelleno() != null) {
+                this.textura = new TexturePaint(
+                        atributos.getImagenRelleno(),
+                        new Rectangle2D.Double(0, 0,
+                                atributos.getImagenRelleno().getWidth(),
+                                atributos.getImagenRelleno().getHeight())
+                );
+            } else {
+                this.textura = null;
+            }
+        }
+    }
+
     private void cargarIconos() {
         try {
             iconSelect = new ImageIcon(ImageIO.read(getClass().getResource("/icons/select.png")));
@@ -310,7 +321,7 @@ public class CustomDrawPanel extends JPanel {
         }
 
         // Atajos para herramientas
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK), "seleccion");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), "seleccion");
         actionMap.put("seleccion", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -318,7 +329,7 @@ public class CustomDrawPanel extends JPanel {
             }
         });
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.CTRL_DOWN_MASK), "mover");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_M, 0), "mover");
         actionMap.put("mover", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -326,7 +337,7 @@ public class CustomDrawPanel extends JPanel {
             }
         });
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK), "rotar");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), "rotar");
         actionMap.put("rotar", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -334,7 +345,7 @@ public class CustomDrawPanel extends JPanel {
             }
         });
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK), "escalar");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, 0), "escalar");
         actionMap.put("escalar", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -342,7 +353,7 @@ public class CustomDrawPanel extends JPanel {
             }
         });
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK), "pincel");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), "pincel");
         actionMap.put("pincel", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -350,7 +361,7 @@ public class CustomDrawPanel extends JPanel {
             }
         });
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK), "goma");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0), "goma");
         actionMap.put("goma", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -358,7 +369,7 @@ public class CustomDrawPanel extends JPanel {
             }
         });
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK), "cubeta");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, 0), "cubeta");
         actionMap.put("cubeta", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -367,7 +378,7 @@ public class CustomDrawPanel extends JPanel {
         });
 
         // Atajos para operaciones
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK), "borrar");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "borrar");
         actionMap.put("borrar", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -415,7 +426,7 @@ public class CustomDrawPanel extends JPanel {
             }
         });
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_J, InputEvent.CTRL_DOWN_MASK), "agrupar");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK), "agrupar");
         actionMap.put("agrupar", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -431,354 +442,21 @@ public class CustomDrawPanel extends JPanel {
             }
         });
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK), "fusionar");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK), "fusionar");
         actionMap.put("fusionar", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 fusionarFigurasSeleccionadas();
             }
         });
-    }
 
-    // Métodos para obtener los iconos (pueden ser usados por la interfaz)
-    public ImageIcon getIconSelect() { return iconSelect; }
-    public ImageIcon getIconMove() { return iconMove; }
-    public ImageIcon getIconRotate() { return iconRotate; }
-    public ImageIcon getIconScale() { return iconScale; }
-    public ImageIcon getIconPencil() { return iconPencil; }
-    public ImageIcon getIconEraser() { return iconEraser; }
-    public ImageIcon getIconBucket() { return iconBucket; }
-    public ImageIcon getIconMerge() { return iconMerge; }
-    public ImageIcon getIconDelete() { return iconDelete; }
-    public ImageIcon getIconCopy() { return iconCopy; }
-    public ImageIcon getIconPaste() { return iconPaste; }
-    public ImageIcon getIconBringToFront() { return iconBringToFront; }
-    public ImageIcon getIconSendToBack() { return iconSendToBack; }
-    public ImageIcon getIconGroup() { return iconGroup; }
-    public ImageIcon getIconUngroup() { return iconUngroup; }
-
-    // Métodos de operación
-    public void setModoSeleccion(boolean activo) {
-        this.modoSeleccion = activo;
-        if (activo) {
-            this.modoMover = false;
-            this.modoRotar = false;
-            this.modoEscalar = false;
-            this.modoPincel = false;
-            this.modoGoma = false;
-            this.modoCubeta = false;
-        }
-        repaint();
-    }
-
-    public void setModoMover(boolean activo) {
-        this.modoMover = activo;
-        if (activo) {
-            this.modoSeleccion = false;
-            this.modoRotar = false;
-            this.modoEscalar = false;
-            this.modoPincel = false;
-            this.modoGoma = false;
-            this.modoCubeta = false;
-        }
-        repaint();
-    }
-
-    public void setModoRotar(boolean activo) {
-        this.modoRotar = activo;
-        if (activo) {
-            this.modoSeleccion = false;
-            this.modoMover = false;
-            this.modoEscalar = false;
-            this.modoPincel = false;
-            this.modoGoma = false;
-            this.modoCubeta = false;
-        }
-        repaint();
-    }
-
-    public void setModoEscalar(boolean activo) {
-        this.modoEscalar = activo;
-        if (activo) {
-            this.modoSeleccion = false;
-            this.modoMover = false;
-            this.modoRotar = false;
-            this.modoPincel = false;
-            this.modoGoma = false;
-            this.modoCubeta = false;
-        }
-        repaint();
-    }
-
-    public void setModoPincel(boolean activo) {
-        this.modoPincel = activo;
-        if (activo) {
-            this.modoSeleccion = false;
-            this.modoMover = false;
-            this.modoRotar = false;
-            this.modoEscalar = false;
-            this.modoGoma = false;
-            this.modoCubeta = false;
-            puntosPincel.clear();
-        }
-        repaint();
-    }
-
-    public void setModoGoma(boolean activo) {
-        this.modoGoma = activo;
-        if (activo) {
-            this.modoSeleccion = false;
-            this.modoMover = false;
-            this.modoRotar = false;
-            this.modoEscalar = false;
-            this.modoPincel = false;
-            this.modoCubeta = false;
-        }
-        repaint();
-    }
-
-    public void setModoCubeta(boolean activo) {
-        this.modoCubeta = activo;
-        if (activo) {
-            this.modoSeleccion = false;
-            this.modoMover = false;
-            this.modoRotar = false;
-            this.modoEscalar = false;
-            this.modoPincel = false;
-            this.modoGoma = false;
-        }
-        repaint();
-    }
-
-    public void setTamanoPincel(float tamano) {
-        this.tamanoPincel = tamano;
-    }
-
-    public void setTamanoGoma(float tamano) {
-        this.tamanoGoma = tamano;
-    }
-
-    public void setColorCubeta(Color color) {
-        this.colorCubeta = color;
-    }
-
-    public void setRellenoCubeta(boolean rellenar) {
-        this.rellenoCubeta = rellenar;
-    }
-
-    public void aplicarTextura(int index) {
-        if (figurasSeleccionadas.isEmpty()) return;
-
-        for (ShapeAtributos sa : figurasSeleccionadas) {
-            sa.atributos.setTexturaIndex(index);
-            if (index >= 0 && index < texturas.length && texturas[index] != null) {
-                sa.textura = new TexturePaint(
-                        texturas[index],
-                        new Rectangle2D.Double(0, 0,
-                                texturas[index].getWidth(),
-                                texturas[index].getHeight())
-                );
-            } else {
-                sa.textura = null;
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK), "guardar");
+        actionMap.put("guardar", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guardarDibujo();
             }
-        }
-        repaint();
-    }
-
-    public void setSeleccionMultiple(boolean multiple) {
-        this.seleccionMultiple = multiple;
-        if (!multiple && figurasSeleccionadas.size() > 1) {
-            ShapeAtributos ultima = figurasSeleccionadas.get(figurasSeleccionadas.size() - 1);
-            figurasSeleccionadas.clear();
-            figurasSeleccionadas.add(ultima);
-        }
-        repaint();
-    }
-
-    public void fusionarFigurasSeleccionadas() {
-        if (figurasSeleccionadas.size() < 2) return;
-
-        Area areaFusionada = new Area();
-        AtributosDibujo atributosFusion = figurasSeleccionadas.get(0).atributos.copiar();
-
-        for (ShapeAtributos sa : figurasSeleccionadas) {
-            areaFusionada.add(new Area(sa.forma));
-            figuras.remove(sa);
-        }
-
-        ShapeAtributos fusion = new ShapeAtributos(areaFusionada, atributosFusion);
-        figuras.add(fusion);
-        figurasSeleccionadas.clear();
-        figurasSeleccionadas.add(fusion);
-        repaint();
-    }
-
-    public void copiarFigurasSeleccionadas() {
-        portapapeles.clear();
-        for (ShapeAtributos sa : figurasSeleccionadas) {
-            portapapeles.add(new ShapeAtributos(cloneShape(sa.forma), sa.atributos.copiar()));
-        }
-    }
-
-    public void pegarFigurasCopiadas() {
-        if (portapapeles.isEmpty()) return;
-
-        figurasSeleccionadas.clear();
-        for (ShapeAtributos sa : portapapeles) {
-            AffineTransform at = AffineTransform.getTranslateInstance(10, 10);
-            Shape formaDesplazada = at.createTransformedShape(sa.forma);
-
-            ShapeAtributos nueva = new ShapeAtributos(formaDesplazada, sa.atributos.copiar());
-            figuras.add(nueva);
-            figurasSeleccionadas.add(nueva);
-        }
-        repaint();
-    }
-
-    public void traerAlFrente() {
-        for (ShapeAtributos sa : figurasSeleccionadas) {
-            figuras.remove(sa);
-            figuras.add(sa);
-        }
-        repaint();
-    }
-
-    public void enviarAtras() {
-        for (ShapeAtributos sa : figurasSeleccionadas) {
-            figuras.remove(sa);
-            figuras.add(0, sa);
-        }
-        repaint();
-    }
-
-    public void agruparFiguras() {
-        if (figurasSeleccionadas.size() < 2) return;
-
-        Rectangle2D bounds = null;
-        for (ShapeAtributos sa : figurasSeleccionadas) {
-            if (bounds == null) {
-                bounds = sa.forma.getBounds2D();
-            } else {
-                bounds = bounds.createUnion(sa.forma.getBounds2D());
-            }
-        }
-
-        Shape grupo = new Rectangle2D.Double(
-                bounds.getX(), bounds.getY(),
-                bounds.getWidth(), bounds.getHeight()
-        );
-
-        ShapeAtributos grupoAtributos = new ShapeAtributos(
-                grupo,
-                figurasSeleccionadas.get(0).atributos.copiar()
-        );
-
-        grupoAtributos.atributos.setEsGrupo(true);
-
-        figuras.removeAll(figurasSeleccionadas);
-        figuras.add(grupoAtributos);
-
-        figurasSeleccionadas.clear();
-        figurasSeleccionadas.add(grupoAtributos);
-
-        repaint();
-    }
-
-    public void desagruparFiguras() {
-        if (figurasSeleccionadas.isEmpty()) return;
-
-        List<ShapeAtributos> paraDesagrupar = new ArrayList<>();
-        List<ShapeAtributos> nuevasFiguras = new ArrayList<>();
-
-        for (ShapeAtributos sa : figurasSeleccionadas) {
-            if (sa.atributos.isEsGrupo()) {
-                paraDesagrupar.add(sa);
-            }
-        }
-
-        if (paraDesagrupar.isEmpty()) return;
-
-        for (ShapeAtributos grupo : paraDesagrupar) {
-            Rectangle2D bounds = grupo.forma.getBounds2D();
-
-            ShapeAtributos nueva1 = new ShapeAtributos(
-                    new Ellipse2D.Double(
-                            bounds.getX(), bounds.getY(),
-                            bounds.getWidth()/2, bounds.getHeight()/2
-                    ),
-                    grupo.atributos.copiar()
-            );
-
-            ShapeAtributos nueva2 = new ShapeAtributos(
-                    new Rectangle2D.Double(
-                            bounds.getX() + bounds.getWidth()/2,
-                            bounds.getY() + bounds.getHeight()/2,
-                            bounds.getWidth()/2,
-                            bounds.getHeight()/2
-                    ),
-                    grupo.atributos.copiar()
-            );
-
-            nuevasFiguras.add(nueva1);
-            nuevasFiguras.add(nueva2);
-
-            figuras.remove(grupo);
-        }
-
-        figuras.addAll(nuevasFiguras);
-        figurasSeleccionadas.clear();
-        figurasSeleccionadas.addAll(nuevasFiguras);
-        repaint();
-    }
-
-    public void eliminarFigurasSeleccionadas() {
-        if (figurasSeleccionadas.isEmpty()) return;
-
-        figuras.removeAll(figurasSeleccionadas);
-        figurasSeleccionadas.clear();
-        repaint();
-    }
-
-    public void escalarFigurasSeleccionadas(double escala) {
-        if (figurasSeleccionadas.isEmpty()) return;
-
-        Rectangle2D bounds = null;
-        for (ShapeAtributos sa : figurasSeleccionadas) {
-            if (bounds == null) {
-                bounds = sa.forma.getBounds2D();
-            } else {
-                bounds = bounds.createUnion(sa.forma.getBounds2D());
-            }
-        }
-
-        double centerX = bounds.getCenterX();
-        double centerY = bounds.getCenterY();
-
-        for (ShapeAtributos sa : figurasSeleccionadas) {
-            AffineTransform at = AffineTransform.getTranslateInstance(centerX, centerY);
-            at.scale(escala, escala);
-            at.translate(-centerX, -centerY);
-            sa.forma = at.createTransformedShape(sa.forma);
-        }
-
-        repaint();
-    }
-
-    private Shape cloneShape(Shape shape) {
-        if (shape instanceof Line2D) {
-            Line2D line = (Line2D) shape;
-            return new Line2D.Double(line.getP1(), line.getP2());
-        } else if (shape instanceof Rectangle2D) {
-            Rectangle2D rect = (Rectangle2D) shape;
-            return new Rectangle2D.Double(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
-        } else if (shape instanceof Ellipse2D) {
-            Ellipse2D ellipse = (Ellipse2D) shape;
-            return new Ellipse2D.Double(ellipse.getX(), ellipse.getY(), ellipse.getWidth(), ellipse.getHeight());
-        } else if (shape instanceof Path2D) {
-            Path2D path = (Path2D) shape;
-            return (Path2D) path.clone();
-        }
-        return null;
+        });
     }
 
     @Override
@@ -823,6 +501,12 @@ public class CustomDrawPanel extends JPanel {
     }
 
     private void dibujarFigura(Graphics2D g2, ShapeAtributos sa) {
+        // Configurar transparencia
+        Composite originalComposite = g2.getComposite();
+        if (sa.atributos.getTransparencia() < 1.0f) {
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, sa.atributos.getTransparencia()));
+        }
+
         if (sa.atributos.isRellenoActivo()) {
             if (sa.textura != null) {
                 g2.setPaint(sa.textura);
@@ -840,6 +524,9 @@ public class CustomDrawPanel extends JPanel {
             g2.setStroke(sa.stroke);
             g2.draw(sa.forma);
         }
+
+        // Restaurar composición original
+        g2.setComposite(originalComposite);
     }
 
     private Paint crearDegradado(Rectangle2D bounds, AtributosDibujo atributos) {
@@ -1133,6 +820,15 @@ public class CustomDrawPanel extends JPanel {
         repaint();
     }
 
+    public void setTransparencia(float transparencia) {
+        this.transparenciaActual = transparencia;
+        atributosActuales.setTransparencia(transparencia);
+        for (ShapeAtributos sa : figurasSeleccionadas) {
+            sa.atributos.setTransparencia(transparencia);
+        }
+        repaint();
+    }
+
     public AtributosDibujo getAtributosActuales() {
         return atributosActuales;
     }
@@ -1380,5 +1076,303 @@ public class CustomDrawPanel extends JPanel {
     void setColor(Color color) {
         atributosActuales.setColorContorno(color);
         repaint();
+    }
+
+    public void setModoSeleccion(boolean activo) {
+        this.modoSeleccion = activo;
+        if (activo) {
+            this.modoMover = false;
+            this.modoRotar = false;
+            this.modoEscalar = false;
+            this.modoPincel = false;
+            this.modoGoma = false;
+            this.modoCubeta = false;
+        }
+        repaint();
+    }
+
+    public void setModoMover(boolean activo) {
+        this.modoMover = activo;
+        if (activo) {
+            this.modoSeleccion = false;
+            this.modoRotar = false;
+            this.modoEscalar = false;
+            this.modoPincel = false;
+            this.modoGoma = false;
+            this.modoCubeta = false;
+        }
+        repaint();
+    }
+
+    public void setModoRotar(boolean activo) {
+        this.modoRotar = activo;
+        if (activo) {
+            this.modoSeleccion = false;
+            this.modoMover = false;
+            this.modoEscalar = false;
+            this.modoPincel = false;
+            this.modoGoma = false;
+            this.modoCubeta = false;
+        }
+        repaint();
+    }
+
+    public void setModoEscalar(boolean activo) {
+        this.modoEscalar = activo;
+        if (activo) {
+            this.modoSeleccion = false;
+            this.modoMover = false;
+            this.modoRotar = false;
+            this.modoPincel = false;
+            this.modoGoma = false;
+            this.modoCubeta = false;
+        }
+        repaint();
+    }
+
+    public void setModoPincel(boolean activo) {
+        this.modoPincel = activo;
+        if (activo) {
+            this.modoSeleccion = false;
+            this.modoMover = false;
+            this.modoRotar = false;
+            this.modoEscalar = false;
+            this.modoGoma = false;
+            this.modoCubeta = false;
+            puntosPincel.clear();
+        }
+        repaint();
+    }
+
+    public void setModoGoma(boolean activo) {
+        this.modoGoma = activo;
+        if (activo) {
+            this.modoSeleccion = false;
+            this.modoMover = false;
+            this.modoRotar = false;
+            this.modoEscalar = false;
+            this.modoPincel = false;
+            this.modoCubeta = false;
+        }
+        repaint();
+    }
+
+    public void setModoCubeta(boolean activo) {
+        this.modoCubeta = activo;
+        if (activo) {
+            this.modoSeleccion = false;
+            this.modoMover = false;
+            this.modoRotar = false;
+            this.modoEscalar = false;
+            this.modoPincel = false;
+            this.modoGoma = false;
+        }
+        repaint();
+    }
+
+    public void setTamanoPincel(float tamano) {
+        this.tamanoPincel = tamano;
+    }
+
+    public void setTamanoGoma(float tamano) {
+        this.tamanoGoma = tamano;
+    }
+
+    public void setColorCubeta(Color color) {
+        this.colorCubeta = color;
+    }
+
+    public void setRellenoCubeta(boolean rellenar) {
+        this.rellenoCubeta = rellenar;
+    }
+
+    public void setSeleccionMultiple(boolean multiple) {
+        this.seleccionMultiple = multiple;
+        if (!multiple && figurasSeleccionadas.size() > 1) {
+            ShapeAtributos ultima = figurasSeleccionadas.get(figurasSeleccionadas.size() - 1);
+            figurasSeleccionadas.clear();
+            figurasSeleccionadas.add(ultima);
+        }
+        repaint();
+    }
+
+    public void fusionarFigurasSeleccionadas() {
+        if (figurasSeleccionadas.size() < 2) return;
+
+        Area areaFusionada = new Area();
+        AtributosDibujo atributosFusion = figurasSeleccionadas.get(0).atributos.copiar();
+
+        for (ShapeAtributos sa : figurasSeleccionadas) {
+            areaFusionada.add(new Area(sa.forma));
+            figuras.remove(sa);
+        }
+
+        ShapeAtributos fusion = new ShapeAtributos(areaFusionada, atributosFusion);
+        figuras.add(fusion);
+        figurasSeleccionadas.clear();
+        figurasSeleccionadas.add(fusion);
+        repaint();
+    }
+
+    public void copiarFigurasSeleccionadas() {
+        portapapeles.clear();
+        for (ShapeAtributos sa : figurasSeleccionadas) {
+            portapapeles.add(new ShapeAtributos(cloneShape(sa.forma), sa.atributos.copiar()));
+        }
+    }
+
+    public void pegarFigurasCopiadas() {
+        if (portapapeles.isEmpty()) return;
+
+        figurasSeleccionadas.clear();
+        for (ShapeAtributos sa : portapapeles) {
+            AffineTransform at = AffineTransform.getTranslateInstance(10, 10);
+            Shape formaDesplazada = at.createTransformedShape(sa.forma);
+
+            ShapeAtributos nueva = new ShapeAtributos(formaDesplazada, sa.atributos.copiar());
+            figuras.add(nueva);
+            figurasSeleccionadas.add(nueva);
+        }
+        repaint();
+    }
+
+    public void traerAlFrente() {
+        for (ShapeAtributos sa : figurasSeleccionadas) {
+            figuras.remove(sa);
+            figuras.add(sa);
+        }
+        repaint();
+    }
+
+    public void enviarAtras() {
+        for (ShapeAtributos sa : figurasSeleccionadas) {
+            figuras.remove(sa);
+            figuras.add(0, sa);
+        }
+        repaint();
+    }
+
+    public void agruparFiguras() {
+        if (figurasSeleccionadas.size() < 2) return;
+
+        Rectangle2D bounds = null;
+        for (ShapeAtributos sa : figurasSeleccionadas) {
+            if (bounds == null) {
+                bounds = sa.forma.getBounds2D();
+            } else {
+                bounds = bounds.createUnion(sa.forma.getBounds2D());
+            }
+        }
+
+        Shape grupo = new Rectangle2D.Double(
+                bounds.getX(), bounds.getY(),
+                bounds.getWidth(), bounds.getHeight()
+        );
+
+        ShapeAtributos grupoAtributos = new ShapeAtributos(
+                grupo,
+                figurasSeleccionadas.get(0).atributos.copiar()
+        );
+
+        grupoAtributos.atributos.setEsGrupo(true);
+
+        figuras.removeAll(figurasSeleccionadas);
+        figuras.add(grupoAtributos);
+
+        figurasSeleccionadas.clear();
+        figurasSeleccionadas.add(grupoAtributos);
+
+        repaint();
+    }
+
+    public void desagruparFiguras() {
+        if (figurasSeleccionadas.isEmpty()) return;
+
+        List<ShapeAtributos> paraDesagrupar = new ArrayList<>();
+        List<ShapeAtributos> nuevasFiguras = new ArrayList<>();
+
+        for (ShapeAtributos sa : figurasSeleccionadas) {
+            if (sa.atributos.isEsGrupo()) {
+                paraDesagrupar.add(sa);
+            }
+        }
+
+        if (paraDesagrupar.isEmpty()) return;
+
+        for (ShapeAtributos grupo : paraDesagrupar) {
+            Rectangle2D bounds = grupo.forma.getBounds2D();
+
+            ShapeAtributos nueva1 = new ShapeAtributos(
+                    new Ellipse2D.Double(
+                            bounds.getX(), bounds.getY(),
+                            bounds.getWidth()/2, bounds.getHeight()/2
+                    ),
+                    grupo.atributos.copiar()
+            );
+
+            ShapeAtributos nueva2 = new ShapeAtributos(
+                    new Rectangle2D.Double(
+                            bounds.getX() + bounds.getWidth()/2,
+                            bounds.getY() + bounds.getHeight()/2,
+                            bounds.getWidth()/2,
+                            bounds.getHeight()/2
+                    ),
+                    grupo.atributos.copiar()
+            );
+
+            nuevasFiguras.add(nueva1);
+            nuevasFiguras.add(nueva2);
+
+            figuras.remove(grupo);
+        }
+
+        figuras.addAll(nuevasFiguras);
+        figurasSeleccionadas.clear();
+        figurasSeleccionadas.addAll(nuevasFiguras);
+        repaint();
+    }
+
+    public void eliminarFigurasSeleccionadas() {
+        if (figurasSeleccionadas.isEmpty()) return;
+
+        figuras.removeAll(figurasSeleccionadas);
+        figurasSeleccionadas.clear();
+        repaint();
+    }
+
+    public void aplicarTextura(int index) {
+        if (figurasSeleccionadas.isEmpty()) return;
+
+        for (ShapeAtributos sa : figurasSeleccionadas) {
+            sa.atributos.setTexturaIndex(index);
+            if (index >= 0 && index < texturas.length && texturas[index] != null) {
+                sa.textura = new TexturePaint(
+                        texturas[index],
+                        new Rectangle2D.Double(0, 0,
+                                texturas[index].getWidth(),
+                                texturas[index].getHeight())
+                );
+            } else {
+                sa.textura = null;
+            }
+        }
+        repaint();
+    }
+
+    private Shape cloneShape(Shape shape) {
+        if (shape instanceof Line2D) {
+            Line2D line = (Line2D) shape;
+            return new Line2D.Double(line.getP1(), line.getP2());
+        } else if (shape instanceof Rectangle2D) {
+            Rectangle2D rect = (Rectangle2D) shape;
+            return new Rectangle2D.Double(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+        } else if (shape instanceof Ellipse2D) {
+            Ellipse2D ellipse = (Ellipse2D) shape;
+            return new Ellipse2D.Double(ellipse.getX(), ellipse.getY(), ellipse.getWidth(), ellipse.getHeight());
+        } else if (shape instanceof Path2D) {
+            Path2D path = (Path2D) shape;
+            return (Path2D) path.clone();
+        }
+        return null;
     }
 }

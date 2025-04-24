@@ -28,6 +28,8 @@ public class ShapeSelectorPanel extends JPanel {
     private JToggleButton toggleRellenoImagen;
     private JButton btnCargarImagen;
     private JSlider sliderEscalaImagen;
+    private JSlider sliderTransparencia;
+    private JLabel lblTransparencia;
 
     // Herramientas
     private JToggleButton btnSeleccionar;
@@ -52,6 +54,7 @@ public class ShapeSelectorPanel extends JPanel {
     private JButton btnDesagrupar;
     private JSlider sliderTamanoPincel;
     private JButton[] btnTexturas = new JButton[4];
+    private JLabel lblPreviewPincel;
 
     AtributosDibujo ad = new AtributosDibujo();
 
@@ -59,6 +62,7 @@ public class ShapeSelectorPanel extends JPanel {
         this.drawPanel = drawPanel;
         setLayout(new BorderLayout());
         initComponents();
+        applyModernStyle();
     }
 
     private void initComponents() {
@@ -67,21 +71,25 @@ public class ShapeSelectorPanel extends JPanel {
 
         // Panel principal para los controles superiores
         JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         // Panel para los ComboBoxes y controles básicos
-        JPanel comboPanel = new JPanel(new GridLayout(1, 6));
+        JPanel comboPanel = new JPanel(new GridLayout(1, 6, 5, 5));
+        comboPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         // Panel para herramientas de selección y transformación
-        JPanel toolsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel toolsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         toolsPanel.setBorder(BorderFactory.createTitledBorder("Herramientas"));
 
         // Panel del menú con scroll
         JPanel menuPanel = new JPanel();
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
+        menuPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         scrollMenuPanel = new JScrollPane(menuPanel);
         scrollMenuPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollMenuPanel.setPreferredSize(new Dimension(300, 400));
+        scrollMenuPanel.setBorder(BorderFactory.createEmptyBorder());
 
         // Inicializar componentes de herramientas
         initToolComponents(toolsPanel);
@@ -97,6 +105,9 @@ public class ShapeSelectorPanel extends JPanel {
 
         // Inicializar componentes de contorno
         initStrokeComponents(menuPanel);
+
+        // Inicializar componentes de transparencia
+        initTransparencyComponents(menuPanel);
 
         // Inicializar componentes de pincel/goma/cubeta
         initPincelGomaCubetaComponents(menuPanel);
@@ -122,21 +133,35 @@ public class ShapeSelectorPanel extends JPanel {
         scrollMenuPanel.setVisible(false);
     }
 
-    private ImageIcon resizeIcon(String path, int width, int height) {
-        try {
-            ImageIcon originalIcon = new ImageIcon(ImageIO.read(getClass().getResource(path)));
-            Image img = originalIcon.getImage();
-            Image resizedImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-            return new ImageIcon(resizedImg);
-        } catch (IOException e) {
-            System.err.println("Error al cargar el icono: " + path);
-            return new ImageIcon(); // Icono vacío si hay error
-        }
+    private void initTransparencyComponents(JPanel menuPanel) {
+        JPanel panelTransparencia = new JPanel(new GridLayout(0, 1, 5, 5));
+        panelTransparencia.setBorder(BorderFactory.createTitledBorder("Transparencia"));
+
+        sliderTransparencia = new JSlider(0, 100, 100);
+        sliderTransparencia.setMajorTickSpacing(25);
+        sliderTransparencia.setMinorTickSpacing(5);
+        sliderTransparencia.setPaintTicks(true);
+        sliderTransparencia.setPaintLabels(true);
+
+        lblTransparencia = new JLabel("100%");
+
+        sliderTransparencia.addChangeListener(e -> {
+            int value = sliderTransparencia.getValue();
+            lblTransparencia.setText(value + "%");
+            float transparencia = value / 100.0f;
+            drawPanel.setTransparencia(transparencia);
+        });
+
+        panelTransparencia.add(new JLabel("Nivel de transparencia:"));
+        panelTransparencia.add(sliderTransparencia);
+        panelTransparencia.add(lblTransparencia);
+
+        menuPanel.add(panelTransparencia);
     }
 
     private void initToolComponents(JPanel toolsPanel) {
         // Botón de selección
-        btnSeleccionar = new JToggleButton(resizeIcon("/icons/select.png", 14, 14));
+        btnSeleccionar = new JToggleButton(resizeIcon("/icons/select.png", 16, 16));
         btnSeleccionar.setToolTipText("Seleccionar figuras (S)");
         btnSeleccionar.addActionListener(e -> {
             drawPanel.setModoSeleccion(btnSeleccionar.isSelected());
@@ -157,7 +182,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de mover
-        btnMover = new JToggleButton(resizeIcon("/icons/move.png", 14, 14));
+        btnMover = new JToggleButton(resizeIcon("/icons/move.png", 16, 16));
         btnMover.setToolTipText("Mover figuras seleccionadas (M)");
         btnMover.addActionListener(e -> {
             drawPanel.setModoMover(btnMover.isSelected());
@@ -172,7 +197,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de rotar
-        btnRotar = new JToggleButton(resizeIcon("/icons/rotate.png", 14, 14));
+        btnRotar = new JToggleButton(resizeIcon("/icons/rotate.png", 16, 16));
         btnRotar.setToolTipText("Rotar figuras seleccionadas (R)");
         btnRotar.addActionListener(e -> {
             drawPanel.setModoRotar(btnRotar.isSelected());
@@ -187,7 +212,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de escalar
-        btnEscalar = new JToggleButton(resizeIcon("/icons/scale.png", 14, 14));
+        btnEscalar = new JToggleButton(resizeIcon("/icons/scale.png", 16, 16));
         btnEscalar.setToolTipText("Escalar figuras seleccionadas (E)");
         btnEscalar.addActionListener(e -> {
             drawPanel.setModoEscalar(btnEscalar.isSelected());
@@ -202,7 +227,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de pincel
-        btnPincel = new JToggleButton(resizeIcon("/icons/pencil.png", 14, 14));
+        btnPincel = new JToggleButton(resizeIcon("/icons/pencil.png", 16, 16));
         btnPincel.setToolTipText("Dibujo libre (P)");
         btnPincel.addActionListener(e -> {
             drawPanel.setModoPincel(btnPincel.isSelected());
@@ -217,7 +242,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de goma
-        btnGoma = new JToggleButton(resizeIcon("/icons/eraser.png", 14, 14));
+        btnGoma = new JToggleButton(resizeIcon("/icons/eraser.png", 16, 16));
         btnGoma.setToolTipText("Borrar figuras (G)");
         btnGoma.addActionListener(e -> {
             drawPanel.setModoGoma(btnGoma.isSelected());
@@ -232,7 +257,7 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de cubeta
-        btnCubeta = new JToggleButton(resizeIcon("/icons/bucket.png", 14, 14));
+        btnCubeta = new JToggleButton(resizeIcon("/icons/bucket.png", 16, 16));
         btnCubeta.setToolTipText("Rellenar áreas (B)");
         btnCubeta.addActionListener(e -> {
             drawPanel.setModoCubeta(btnCubeta.isSelected());
@@ -247,56 +272,56 @@ public class ShapeSelectorPanel extends JPanel {
         });
 
         // Botón de fusionar
-        btnFusionar = new JButton(resizeIcon("/icons/merge.png", 14, 14));
+        btnFusionar = new JButton(resizeIcon("/icons/merge.png", 16, 16));
         btnFusionar.setToolTipText("Fusionar figuras seleccionadas (Ctrl+F)");
         btnFusionar.addActionListener(e -> {
             drawPanel.fusionarFigurasSeleccionadas();
         });
 
         // Botón de eliminar
-        btnEliminar = new JButton(resizeIcon("/icons/delete.png", 14, 14));
+        btnEliminar = new JButton(resizeIcon("/icons/delete.png", 16, 16));
         btnEliminar.setToolTipText("Eliminar figuras seleccionadas (Del)");
         btnEliminar.addActionListener(e -> {
             drawPanel.eliminarFigurasSeleccionadas();
         });
 
         // Botón de copiar
-        btnCopiar = new JButton(resizeIcon("/icons/copy.png", 14, 14));
+        btnCopiar = new JButton(resizeIcon("/icons/copy.png", 16, 16));
         btnCopiar.setToolTipText("Copiar figuras seleccionadas (Ctrl+C)");
         btnCopiar.addActionListener(e -> {
             drawPanel.copiarFigurasSeleccionadas();
         });
 
         // Botón de pegar
-        btnPegar = new JButton(resizeIcon("/icons/paste.png", 14, 14));
+        btnPegar = new JButton(resizeIcon("/icons/paste.png", 16, 16));
         btnPegar.setToolTipText("Pegar figuras copiadas (Ctrl+V)");
         btnPegar.addActionListener(e -> {
             drawPanel.pegarFigurasCopiadas();
         });
 
         // Botón de traer al frente
-        btnTraerAlFrente = new JButton(resizeIcon("/icons/bring_to_front.png", 14, 14));
+        btnTraerAlFrente = new JButton(resizeIcon("/icons/bring_to_front.png", 16, 16));
         btnTraerAlFrente.setToolTipText("Traer al frente (Ctrl+↑)");
         btnTraerAlFrente.addActionListener(e -> {
             drawPanel.traerAlFrente();
         });
 
         // Botón de enviar atrás
-        btnEnviarAtras = new JButton(resizeIcon("/icons/send_to_back.png", 14, 14));
+        btnEnviarAtras = new JButton(resizeIcon("/icons/send_to_back.png", 16, 16));
         btnEnviarAtras.setToolTipText("Enviar atrás (Ctrl+↓)");
         btnEnviarAtras.addActionListener(e -> {
             drawPanel.enviarAtras();
         });
 
         // Botón de agrupar
-        btnAgrupar = new JButton(resizeIcon("/icons/group.png", 14, 14));
+        btnAgrupar = new JButton(resizeIcon("/icons/group.png", 16, 16));
         btnAgrupar.setToolTipText("Agrupar figuras (Ctrl+G)");
         btnAgrupar.addActionListener(e -> {
             drawPanel.agruparFiguras();
         });
 
         // Botón de desagrupar
-        btnDesagrupar = new JButton(resizeIcon("/icons/ungroup.png", 14, 14));
+        btnDesagrupar = new JButton(resizeIcon("/icons/ungroup.png", 16, 16));
         btnDesagrupar.setToolTipText("Desagrupar figuras (Ctrl+U)");
         btnDesagrupar.addActionListener(e -> {
             drawPanel.desagruparFiguras();
@@ -338,8 +363,6 @@ public class ShapeSelectorPanel extends JPanel {
 
         // Botones de selección de color
         JButton btnRelleno = new JButton("Color Relleno");
-        JButton btnContorno = new JButton("Color Contorno");
-
         btnRelleno.addActionListener(e -> {
             Color color = JColorChooser.showDialog(this, "Color de Relleno", Color.WHITE);
             if (color != null) {
@@ -347,6 +370,7 @@ public class ShapeSelectorPanel extends JPanel {
             }
         });
 
+        JButton btnContorno = new JButton("Color Contorno");
         btnContorno.addActionListener(e -> {
             Color color = JColorChooser.showDialog(this, "Color de Contorno", Color.BLACK);
             if (color != null) {
@@ -385,7 +409,7 @@ public class ShapeSelectorPanel extends JPanel {
 
     private void initGradientComponents(JPanel menuPanel) {
         // Panel para degradado
-        JPanel panelDegradado = new JPanel(new GridLayout(0, 1));
+        JPanel panelDegradado = new JPanel(new GridLayout(0, 1, 5, 5));
         panelDegradado.setBorder(BorderFactory.createTitledBorder("Degradado"));
 
         chkDegradado = new JCheckBox("Relleno degradado");
@@ -429,7 +453,7 @@ public class ShapeSelectorPanel extends JPanel {
     }
 
     private void initImageComponents(JPanel menuPanel) {
-        JPanel panelRellenoImagen = new JPanel(new GridLayout(0, 1));
+        JPanel panelRellenoImagen = new JPanel(new GridLayout(0, 1, 5, 5));
         panelRellenoImagen.setBorder(BorderFactory.createTitledBorder("Relleno con Imagen"));
 
         btnCargarImagen = new JButton("Cargar Imagen");
@@ -451,7 +475,7 @@ public class ShapeSelectorPanel extends JPanel {
             drawPanel.repaint();
         });
 
-        JPanel panelEscalaImagen = new JPanel(new GridLayout(0, 1));
+        JPanel panelEscalaImagen = new JPanel(new GridLayout(0, 1, 5, 5));
         panelEscalaImagen.setBorder(BorderFactory.createTitledBorder("Escala de Imagen"));
 
         sliderEscalaImagen = new JSlider(10, 200, 100);
@@ -493,6 +517,9 @@ public class ShapeSelectorPanel extends JPanel {
     }
 
     private void initStrokeComponents(JPanel menuPanel) {
+        JPanel panelContorno = new JPanel(new GridLayout(0, 1, 5, 5));
+        panelContorno.setBorder(BorderFactory.createTitledBorder("Estilo de Contorno"));
+
         sliderAnchoContorno = new JSlider(1, 20, 1);
         sliderAnchoContorno.setMajorTickSpacing(5);
         sliderAnchoContorno.setMinorTickSpacing(1);
@@ -532,9 +559,6 @@ public class ShapeSelectorPanel extends JPanel {
             drawPanel.repaint();
         });
 
-        JPanel panelContorno = new JPanel(new GridLayout(0, 1));
-        panelContorno.setBorder(BorderFactory.createTitledBorder("Estilo de Contorno"));
-
         panelContorno.add(new JLabel("Ancho del contorno:"));
         panelContorno.add(sliderAnchoContorno);
         panelContorno.add(new JLabel("Estilo punteado:"));
@@ -546,11 +570,11 @@ public class ShapeSelectorPanel extends JPanel {
     }
 
     private void initPincelGomaCubetaComponents(JPanel menuPanel) {
-        JPanel panelHerramientas = new JPanel(new GridLayout(0, 1));
+        JPanel panelHerramientas = new JPanel(new GridLayout(0, 1, 5, 5));
         panelHerramientas.setBorder(BorderFactory.createTitledBorder("Herramientas de dibujo"));
 
         // Configuración del pincel
-        JPanel panelPincel = new JPanel(new GridLayout(0, 1));
+        JPanel panelPincel = new JPanel(new GridLayout(0, 1, 5, 5));
         panelPincel.setBorder(BorderFactory.createTitledBorder("Pincel"));
 
         sliderTamanoPincel = new JSlider(1, 50, 5);
@@ -565,14 +589,35 @@ public class ShapeSelectorPanel extends JPanel {
             int value = sliderTamanoPincel.getValue();
             lblTamanoPincel.setText("Tamaño: " + value + "px");
             drawPanel.setTamanoPincel(value);
+            updatePincelPreview();
         });
+
+        // Panel de vista previa del pincel
+        JPanel previewPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int size = sliderTamanoPincel.getValue();
+                int centerX = getWidth() / 2;
+                int centerY = getHeight() / 2;
+
+                g2.setColor(Color.BLACK);
+                g2.fillOval(centerX - size/2, centerY - size/2, size, size);
+            }
+        };
+        previewPanel.setPreferredSize(new Dimension(50, 50));
+        previewPanel.setBorder(BorderFactory.createTitledBorder("Vista previa"));
 
         panelPincel.add(new JLabel("Tamaño del pincel:"));
         panelPincel.add(sliderTamanoPincel);
         panelPincel.add(lblTamanoPincel);
+        panelPincel.add(previewPanel);
 
         // Configuración de la goma
-        JPanel panelGoma = new JPanel(new GridLayout(0, 1));
+        JPanel panelGoma = new JPanel(new GridLayout(0, 1, 5, 5));
         panelGoma.setBorder(BorderFactory.createTitledBorder("Goma"));
 
         JSlider sliderTamanoGoma = new JSlider(1, 50, 10);
@@ -594,7 +639,7 @@ public class ShapeSelectorPanel extends JPanel {
         panelGoma.add(lblTamanoGoma);
 
         // Configuración de la cubeta
-        JPanel panelCubeta = new JPanel(new GridLayout(0, 1));
+        JPanel panelCubeta = new JPanel(new GridLayout(0, 1, 5, 5));
         panelCubeta.setBorder(BorderFactory.createTitledBorder("Cubeta"));
 
         JButton btnColorCubeta = new JButton("Color de relleno");
@@ -621,8 +666,25 @@ public class ShapeSelectorPanel extends JPanel {
         menuPanel.add(panelHerramientas);
     }
 
+    private void updatePincelPreview() {
+        Component[] components = scrollMenuPanel.getComponents();
+        for (Component c : components) {
+            if (c instanceof JPanel) {
+                JPanel panel = (JPanel) c;
+                Component[] subComponents = panel.getComponents();
+                for (Component sc : subComponents) {
+                    if (sc instanceof JPanel && ((JPanel) sc).getBorder() != null &&
+                            ((JPanel) sc).getBorder().toString().contains("Vista previa")) {
+                        sc.repaint();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     private void initTextureComponents(JPanel menuPanel) {
-        JPanel panelTexturas = new JPanel(new GridLayout(0, 2));
+        JPanel panelTexturas = new JPanel(new GridLayout(2, 2, 5, 5));
         panelTexturas.setBorder(BorderFactory.createTitledBorder("Texturas"));
 
         String[] nombresTexturas = {"Madera", "Líneas", "Puntos", "Cuadrícula"};
@@ -697,6 +759,64 @@ public class ShapeSelectorPanel extends JPanel {
                         JOptionPane.ERROR_MESSAGE);
                 ex.printStackTrace();
             }
+        }
+    }
+
+    private void applyModernStyle() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            SwingUtilities.updateComponentTreeUI(this);
+
+            // Estilo personalizado para los botones
+            Color accentColor = new Color(70, 130, 180);
+            Color backgroundColor = new Color(240, 240, 240);
+
+            setBackground(backgroundColor);
+
+            UIManager.put("Button.background", new Color(245, 245, 245));
+            UIManager.put("Button.foreground", Color.BLACK);
+            UIManager.put("Button.border", BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                    BorderFactory.createEmptyBorder(5, 10, 5, 10)
+            ));
+            UIManager.put("Button.select", accentColor);
+
+            UIManager.put("ToggleButton.background", new Color(245, 245, 245));
+            UIManager.put("ToggleButton.foreground", Color.BLACK);
+            UIManager.put("ToggleButton.border", BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                    BorderFactory.createEmptyBorder(5, 10, 5, 10)
+            ));
+            UIManager.put("ToggleButton.select", accentColor);
+
+            UIManager.put("ComboBox.background", Color.WHITE);
+            UIManager.put("ComboBox.border", BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
+
+            UIManager.put("Slider.background", backgroundColor);
+            UIManager.put("Slider.trackColor", new Color(200, 200, 200));
+            UIManager.put("Slider.thumbColor", accentColor);
+            UIManager.put("Slider.highlight", accentColor);
+
+            UIManager.put("Panel.background", backgroundColor);
+            UIManager.put("ScrollPane.background", backgroundColor);
+            UIManager.put("Viewport.background", backgroundColor);
+
+            UIManager.put("TitledBorder.titleColor", new Color(80, 80, 80));
+            UIManager.put("TitledBorder.border", BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private ImageIcon resizeIcon(String path, int width, int height) {
+        try {
+            ImageIcon originalIcon = new ImageIcon(ImageIO.read(getClass().getResource(path)));
+            Image img = originalIcon.getImage();
+            Image resizedImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(resizedImg);
+        } catch (IOException e) {
+            System.err.println("Error al cargar el icono: " + path);
+            return new ImageIcon(); // Icono vacío si hay error
         }
     }
 }
